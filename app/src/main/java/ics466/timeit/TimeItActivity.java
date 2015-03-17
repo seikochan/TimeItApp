@@ -1,18 +1,27 @@
+package ics466.timeit;
+
 /**
  * Created by seikochan on 3/16/15.
  */
-public class Activity {
+public class TimeItActivity {
     private String actName;
     private long timeStart;
     private long timeEnd;
+    private long timeTotal;
 
-    public Activity(){
+    public TimeItActivity(){
         actName = "";
         timeStart= -1;
         timeEnd = -1;
+        timeTotal = -1;
     }
 
-    public Activity(String name, long start, long end){
+    public TimeItActivity(String name, long time){
+        actName = name;
+        timeTotal = time;
+    }
+
+    public TimeItActivity(String name, long start, long end){
         //error checking for start before end?
 
     }
@@ -40,4 +49,13 @@ public class Activity {
     public long getTimeEnd(){
         return timeEnd;
     }
+
+    public void setTimeTotal(long total){
+        timeTotal= total;
+    }
+
+    public long getTimeTotal(){
+        return timeTotal;
+    }
+
 }
