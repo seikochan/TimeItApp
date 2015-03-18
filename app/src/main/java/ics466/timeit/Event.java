@@ -18,12 +18,14 @@ public class Event {
     private int startDay;
     private int startHour;
     private int startMin;
+    private long startTime;
 
     private int endYear;
     private int endMonth;
     private int endDay;
     private int endHour;
     private int endMin;
+    private long endTime;
 
 
     public Event(){
@@ -176,24 +178,34 @@ public class Event {
     }
 
     public void createwEvent() {
-        Calendar startTime = Calendar.getInstance();
-        //startTime.clear();
-        startTime.set(Calendar.YEAR, startYear);
-        startTime.set(Calendar.MONTH, startMonth-1);
-        startTime.set(Calendar.DAY_OF_MONTH, startDay);
-        startTime.set(Calendar.HOUR_OF_DAY, startHour);
-        startTime.set(Calendar.MINUTE, startMin);
+        Calendar sTime = Calendar.getInstance();
+        //sTime.clear();
+        sTime.set(Calendar.YEAR, startYear);
+        sTime.set(Calendar.MONTH, startMonth-1);
+        sTime.set(Calendar.DAY_OF_MONTH, startDay);
+        sTime.set(Calendar.HOUR_OF_DAY, startHour);
+        sTime.set(Calendar.MINUTE, startMin);
+        startTime = sTime.getTimeInMillis();
 
-        Calendar endTime = (Calendar) startTime.clone();
-        endTime.set(Calendar.YEAR, endYear);
-        endTime.set(Calendar.MONTH, endMonth-1);
-        endTime.set(Calendar.DAY_OF_MONTH, endDay);
-        endTime.set(Calendar.HOUR_OF_DAY, endHour);
-        endTime.set(Calendar.MINUTE, endMin);
+        Calendar eTime = (Calendar) sTime.clone();
+        eTime.set(Calendar.YEAR, endYear);
+        eTime.set(Calendar.MONTH, endMonth-1);
+        eTime.set(Calendar.DAY_OF_MONTH, endDay);
+        eTime.set(Calendar.HOUR_OF_DAY, endHour);
+        eTime.set(Calendar.MINUTE, endMin);
+        endTime = eTime.getTimeInMillis();
 
-        WeekViewEvent event = new WeekViewEvent(id, eventName, startTime, endTime);
+        WeekViewEvent event = new WeekViewEvent(id, eventName, sTime, eTime);
 
         this.wEvent = event;
+    }
+
+    public long getStartTime(){
+        return startTime;
+    }
+
+    public long getEndTime(){
+        return endTime;
     }
 
 }

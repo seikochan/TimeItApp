@@ -36,6 +36,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 public class MainActivity extends ActionBarActivity implements WeekView.MonthChangeListener,
         WeekView.EventClickListener, WeekView.EventLongPressListener{
@@ -52,9 +53,10 @@ public class MainActivity extends ActionBarActivity implements WeekView.MonthCha
     private Button btnStatsOpen;
     private PopupWindow pwStats;
 
-    private List<TimeItActivity> activityArrList;
+
     private List<Event> eventsArrList;
-    private static HashMap<Integer, List<WeekViewEvent>> activityMap;
+    private static HashMap<Integer, List<WeekViewEvent>> wEventMapByMonth;
+    private static HashMap<String, List<Event>> activityMap;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -78,6 +80,7 @@ public class MainActivity extends ActionBarActivity implements WeekView.MonthCha
         // Set long press listener for events.
         mWeekView.setEventLongPressListener(this);
 
+        wEventMapByMonth = new HashMap<>();
         activityMap = new HashMap<>();
         eventsArrList = new ArrayList<>();
 
@@ -95,7 +98,7 @@ public class MainActivity extends ActionBarActivity implements WeekView.MonthCha
             @Override
             public void onClick(View v) {
                 AlertDialog.Builder builder = new AlertDialog.Builder((CONTEXT));
-                activityArrList = new ArrayList<TimeItActivity>();
+                final ArrayList<TimeItActivity> activityArrList = new ArrayList<TimeItActivity>();
 
                 // create a close button
                 builder.setNegativeButton(R.string.close,new DialogInterface.OnClickListener() {
@@ -105,22 +108,23 @@ public class MainActivity extends ActionBarActivity implements WeekView.MonthCha
                     }
                 });
 
-                // create a list adapter for TimeItActivities
+                // create a list adapter for Events
                 //populate Statistics List
-                Iterator iter = MainActivity.getActivitiesMap().entrySet().iterator();
+                Iterator iter = MainActivity.getActivityMap().entrySet().iterator();
                 while(iter.hasNext()) {
                     Map.Entry pair = (Map.Entry) iter.next();
-                    System.out.print("FOUND: " + pair.getKey() + ", ");
-                    List<WeekViewEvent> eventList = (List<WeekViewEvent>) pair.getValue();
+                    System.out.print("FOUND: " + pair.getKey() + "-> ");
+                    List<Event> eventList = (List<Event>) pair.getValue();
 
-                    TimeItActivity act = new TimeItActivity((String) pair.getKey(), (long) 0);
 
+                    long totTime = 0;
                     for (int i = 0; i < eventList.size(); i++) {
-                        System.out.print(eventList.get(i).getName() + " - ");
-                        long totTime = eventList.get(i).getEndTime().getTimeInMillis() - eventList.get(i).getStartTime().getTimeInMillis();
-                        act.setTimeTotal(act.getTimeTotal() + totTime);
-                        activityArrList.add(act);
+                        System.out.print(eventList.get(i).getId() + " - ");
+                        long eventTime = eventList.get(i).getEndTime() - eventList.get(i).getStartTime();
+                        totTime = totTime + eventTime;
                     }
+                    TimeItActivity act = new TimeItActivity((String) pair.getKey(), totTime);
+                    activityArrList.add(act);
                     System.out.println("!!!!!!!!!!!!!!!!!!!");
                 }
                 // populate ListView
@@ -131,27 +135,25 @@ public class MainActivity extends ActionBarActivity implements WeekView.MonthCha
                         //View itemView = convertView;
                         final ViewHolder mHolder;
 
-//                        /*previous stuff, and holder.linearLayout must have been set!*/
-//                        if(mHolder.linearLayout.getChildCount() > 0)
-//                            mHolder.linearLayout.removeAllViews();
-
                         TextView nameView;
                         TextView statView;
+                        TextView totTimeView;
 
                         //Ensure we have a view to work with
                         if(convertView == null) {
                             convertView = getLayoutInflater().inflate(R.layout.stats_item, parent, false);
 
-//                            //TODO prevent multiple instances of same item in list
+////                            //TODO prevent multiple instances of same item in list
 //                            mHolder = new ViewHolder();
 //
 //                            mHolder.mText = (TextView) convertView.findViewById(R.id.actName);
 //                            mHolder.mStat = (TextView) convertView.findViewById(R.id.intStatVal);
-//
+
 //                            convertView.setTag(mHolder);
-                        }else{
-//                            mHolder = (ViewHolder) convertView.getTag();
                         }
+//                        else{
+//                            mHolder = (ViewHolder) convertView.getTag();
+//                        }
 
 
                         //TODO switch on day, week, month, etc
@@ -163,16 +165,28 @@ public class MainActivity extends ActionBarActivity implements WeekView.MonthCha
                         //Fill the view
                         nameView = (TextView) convertView.findViewById(R.id.actName);
                         nameView.setText(currAct.getActName());
-//                        mHolder.mText.setText(currAct.getActName());
+                        //mHolder.mText.setText(currAct.getActName());
 
-                         statView = (TextView) convertView.findViewById(R.id.intStatVal);
+                        statView = (TextView) convertView.findViewById(R.id.intStatVal);
                         //calculate statistics
                         //right now based on 24hrs (86400000 ms)
-                        int stat = (int)currAct.getTimeTotal()/86400000;
-                        statView.setText(Integer.toString(stat));
-//                        mHolder.mStat.setText(Integer.toString(stat));
+                        double msDay = 86400000;
+                        int stat = (int)((currAct.getTimeTotal()/msDay)*100);
+                        statView.setText(Integer.toString(stat) + "%");
+//                        mHolder.mStat.setText(Integer.toString(stat) + "%");
 
-                        convertView.setClickable(false);
+                        totTimeView = (TextView) convertView.findViewById(R.id.totTimeVal);
+                        long millis = currAct.getTimeTotal();
+                        String prettyTime = String.format("%d hr, %d min, %d sec",
+                                TimeUnit.MILLISECONDS.toHours(millis),
+                                TimeUnit.MILLISECONDS.toMinutes(millis) -
+                                        TimeUnit.HOURS.toMinutes(TimeUnit.MILLISECONDS.toHours(millis)),
+                                TimeUnit.MILLISECONDS.toSeconds(millis) -
+                                        TimeUnit.MINUTES.toSeconds(TimeUnit.MILLISECONDS.toMinutes(millis))
+                        );
+                        totTimeView.setText(prettyTime);
+
+                        //convertView.setClickable(false);
                         //TODO make the listView items unclickable (this no work :( )
 
                         return (convertView);
@@ -288,54 +302,82 @@ public class MainActivity extends ActionBarActivity implements WeekView.MonthCha
                 2015, 3, 25, 10, 30,
                 2015, 3, 25, 13, 00);
         event1.getwEvent().setColor(getResources().getColor(event1.getEventColor()));
-        if(activityMap.containsKey(event1.getStartMonth())){
-            activityMap.get(event1.getStartMonth()).add(event1.getwEvent());
+        if(wEventMapByMonth.containsKey(event1.getStartMonth())){
+            wEventMapByMonth.get(event1.getStartMonth()).add(event1.getwEvent());
         }else{
             List<WeekViewEvent> events = new ArrayList<WeekViewEvent>();
             events.add(event1.getwEvent());
-            activityMap.put(event1.getStartMonth(),events);
+            wEventMapByMonth.put(event1.getStartMonth(),events);
         }
         eventsArrList.add(event1);
+        if(activityMap.containsKey(event1.getEventName())){
+            activityMap.get(event1.getEventName()).add(event1);
+        }else{
+            List<Event> events = new ArrayList<Event>();
+            events.add(event1);
+            activityMap.put(event1.getEventName(),events);
+        }
 
         Event event2 = new Event(2,"Exercise", R.color.event_color_02,
                 2015, 3, 22, 20, 00,
                 2015, 3, 22, 22, 00);
         event2.getwEvent().setColor(getResources().getColor(event2.getEventColor()));
-        if(activityMap.containsKey(event2.getStartMonth())){
-            activityMap.get(event2.getStartMonth()).add(event2.getwEvent());
+        if(wEventMapByMonth.containsKey(event2.getStartMonth())){
+            wEventMapByMonth.get(event2.getStartMonth()).add(event2.getwEvent());
         }else{
             List<WeekViewEvent> events = new ArrayList<WeekViewEvent>();
             events.add(event2.getwEvent());
-            activityMap.put(event2.getStartMonth(),events);
+            wEventMapByMonth.put(event2.getStartMonth(),events);
         }
         eventsArrList.add(event2);
+        if(activityMap.containsKey(event2.getEventName())){
+            activityMap.get(event2.getEventName()).add(event2);
+        }else{
+            List<Event> events = new ArrayList<Event>();
+            events.add(event2);
+            activityMap.put(event2.getEventName(),events);
+        }
         
         
         Event event3 = new Event(3,"Socialize", R.color.event_color_03,
                 2015, 4, 1, 18, 20,
                 2015, 4, 2, 1, 30);
         event3.getwEvent().setColor(getResources().getColor(event3.getEventColor()));
-        if(activityMap.containsKey(event3.getStartMonth())){
-            activityMap.get(event3.getStartMonth()).add(event3.getwEvent());
+        if(wEventMapByMonth.containsKey(event3.getStartMonth())){
+            wEventMapByMonth.get(event3.getStartMonth()).add(event3.getwEvent());
         }else{
             List<WeekViewEvent> events = new ArrayList<WeekViewEvent>();
             events.add(event3.getwEvent());
-            activityMap.put(event3.getStartMonth(),events);
+            wEventMapByMonth.put(event3.getStartMonth(),events);
         }
         eventsArrList.add(event3);
+        if(activityMap.containsKey(event3.getEventName())){
+            activityMap.get(event3.getEventName()).add(event3);
+        }else{
+            List<Event> events = new ArrayList<Event>();
+            events.add(event3);
+            activityMap.put(event3.getEventName(),events);
+        }
         
         Event event4 = new Event(4,"Socialize", R.color.event_color_03,
                 2015, 3, 23, 15, 30,
                 2015, 3, 23, 17, 30);
         event4.getwEvent().setColor(getResources().getColor(event4.getEventColor()));
-        if(activityMap.containsKey(event4.getStartMonth())){
-            activityMap.get(event4.getStartMonth()).add(event4.getwEvent());
+        if(wEventMapByMonth.containsKey(event4.getStartMonth())){
+            wEventMapByMonth.get(event4.getStartMonth()).add(event4.getwEvent());
         }else{
             List<WeekViewEvent> events = new ArrayList<WeekViewEvent>();
             events.add(event4.getwEvent());
-            activityMap.put(event4.getStartMonth(),events);
+            wEventMapByMonth.put(event4.getStartMonth(),events);
         }
         eventsArrList.add(event4);
+        if(activityMap.containsKey(event4.getEventName())){
+            activityMap.get(event4.getEventName()).add(event4);
+        }else{
+            List<Event> events = new ArrayList<Event>();
+            events.add(event4);
+            activityMap.put(event4.getEventName(),events);
+        }
     }
 
     @Override
@@ -346,9 +388,9 @@ public class MainActivity extends ActionBarActivity implements WeekView.MonthCha
     System.out.println("onMonthChange(" + newYear + "," + newMonth +") was called ---------------");
 
         // add the events in this month to the weekview calendar
-        if(activityMap.get(newMonth) != null){
+        if(wEventMapByMonth.get(newMonth) != null){
             System.out.println("FOUND: events in month" + newMonth);
-            allEvents.addAll(activityMap.get(newMonth));
+            allEvents.addAll(wEventMapByMonth.get(newMonth));
         }
 
         return allEvents;
@@ -358,7 +400,11 @@ public class MainActivity extends ActionBarActivity implements WeekView.MonthCha
         return String.format("ics466.timeit.Event of %02d:%02d %s/%d", time.get(Calendar.HOUR_OF_DAY), time.get(Calendar.MINUTE), time.get(Calendar.MONTH)+1, time.get(Calendar.DAY_OF_MONTH));
     }
 
-    protected static HashMap<Integer,List<WeekViewEvent>> getActivitiesMap(){
+    protected static HashMap<Integer,List<WeekViewEvent>> getwEventMapByMonth(){
+        return wEventMapByMonth;
+    }
+
+    protected static HashMap<String,List<Event>> getActivityMap(){
         return activityMap;
     }
 
