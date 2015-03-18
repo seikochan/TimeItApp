@@ -16,6 +16,8 @@ import android.view.MenuItem;
 import android.util.TypedValue;
 import android.view.View;
 import android.widget.ArrayAdapter;
+import android.widget.CheckBox;
+import android.widget.ImageView;
 import android.widget.ListAdapter;
 import android.widget.ListView;
 import android.widget.PopupWindow;
@@ -51,7 +53,8 @@ public class MainActivity extends ActionBarActivity implements WeekView.MonthCha
     private PopupWindow pwStats;
 
     private List<TimeItActivity> activityArrList;
-    private static HashMap<String, List<WeekViewEvent>> activityMap;
+    private List<Event> eventsArrList;
+    private static HashMap<Integer, List<WeekViewEvent>> activityMap;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -76,8 +79,11 @@ public class MainActivity extends ActionBarActivity implements WeekView.MonthCha
         mWeekView.setEventLongPressListener(this);
 
         activityMap = new HashMap<>();
+        eventsArrList = new ArrayList<>();
 
             setStatsDialogBox();
+
+        getUserInput();
     }
 
     public void setStatsDialogBox(){
@@ -104,26 +110,47 @@ public class MainActivity extends ActionBarActivity implements WeekView.MonthCha
                 Iterator iter = MainActivity.getActivitiesMap().entrySet().iterator();
                 while(iter.hasNext()) {
                     Map.Entry pair = (Map.Entry) iter.next();
+                    System.out.print("FOUND: " + pair.getKey() + ", ");
                     List<WeekViewEvent> eventList = (List<WeekViewEvent>) pair.getValue();
 
                     TimeItActivity act = new TimeItActivity((String) pair.getKey(), (long) 0);
 
                     for (int i = 0; i < eventList.size(); i++) {
+                        System.out.print(eventList.get(i).getName() + " - ");
                         long totTime = eventList.get(i).getEndTime().getTimeInMillis() - eventList.get(i).getStartTime().getTimeInMillis();
                         act.setTimeTotal(act.getTimeTotal() + totTime);
                         activityArrList.add(act);
                     }
+                    System.out.println("!!!!!!!!!!!!!!!!!!!");
                 }
                 // populate ListView
                 ListAdapter adapter = new ArrayAdapter<TimeItActivity>(
                         MainActivity.this, R.layout.stats_item, activityArrList ) {
 
                     public View getView(int position, View convertView, ViewGroup parent) {
-                        View itemView = convertView;
+                        //View itemView = convertView;
+                        final ViewHolder mHolder;
+
+//                        /*previous stuff, and holder.linearLayout must have been set!*/
+//                        if(mHolder.linearLayout.getChildCount() > 0)
+//                            mHolder.linearLayout.removeAllViews();
+
+                        TextView nameView;
+                        TextView statView;
 
                         //Ensure we have a view to work with
-                        if(itemView == null) {
-                            itemView = getLayoutInflater().inflate(R.layout.stats_item, parent, false);
+                        if(convertView == null) {
+                            convertView = getLayoutInflater().inflate(R.layout.stats_item, parent, false);
+
+//                            //TODO prevent multiple instances of same item in list
+//                            mHolder = new ViewHolder();
+//
+//                            mHolder.mText = (TextView) convertView.findViewById(R.id.actName);
+//                            mHolder.mStat = (TextView) convertView.findViewById(R.id.intStatVal);
+//
+//                            convertView.setTag(mHolder);
+                        }else{
+//                            mHolder = (ViewHolder) convertView.getTag();
                         }
 
 
@@ -134,19 +161,28 @@ public class MainActivity extends ActionBarActivity implements WeekView.MonthCha
                         TimeItActivity currAct = activityArrList.get(position);
 
                         //Fill the view
-                        TextView nameView = (TextView) itemView.findViewById(R.id.actName);
+                        nameView = (TextView) convertView.findViewById(R.id.actName);
                         nameView.setText(currAct.getActName());
+//                        mHolder.mText.setText(currAct.getActName());
 
-                        TextView statView = (TextView) itemView.findViewById(R.id.intStatVal);
+                         statView = (TextView) convertView.findViewById(R.id.intStatVal);
                         //calculate statistics
                         //right now based on 24hrs (86400000 ms)
                         int stat = (int)currAct.getTimeTotal()/86400000;
                         statView.setText(Integer.toString(stat));
+//                        mHolder.mStat.setText(Integer.toString(stat));
 
-                        itemView.setClickable(false);
+                        convertView.setClickable(false);
                         //TODO make the listView items unclickable (this no work :( )
 
-                        return (itemView);
+                        return (convertView);
+                    }
+
+                    //helper class and cache mechanism that stores Views
+                    class ViewHolder {
+                        private TextView mText;
+                        private TextView mStat;
+
                     }
                 };
 
@@ -169,35 +205,6 @@ public class MainActivity extends ActionBarActivity implements WeekView.MonthCha
 
         });
     }
-
-
-        //TODO try to get working with a menu item?
-//    private void getPopupWindow(){
-//        try{
-//            context = StatisticsList.getApplicationContext();
-//            //need to somehow pass in appContext from StsisticsList to here....
-//
-//            LayoutInflater inflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-//            View layout = inflater.inflate(R.layout.stats_popup_main,(ViewGroup)findViewById(R.id.stats_popup_element));
-//            pwStats = new PopupWindow(layout, 700, 700, true);
-//            pwStats.showAtLocation(layout, Gravity.CENTER, 0, 0);
-//
-//        System.out.println("POPUP WINDOW CREATED!!!!!!!!!!!");
-//
-//            //System.out.println(activityArrList.toString());
-//
-//            btnStatsClose = (Button) layout.findViewById(R.id.btn_stats_close);
-//
-//            btnStatsClose.setOnClickListener(new View.OnClickListener() {
-//                @Override
-//                public void onClick(View v) {
-//                    pwStats.dismiss();
-//                }
-//            });
-//        }catch(Exception e){
-//            e.printStackTrace();
-//        }
-//    }
 
 
     @Override
@@ -274,38 +281,61 @@ public class MainActivity extends ActionBarActivity implements WeekView.MonthCha
     }
 
     //TODO remove once made a userinput interface
-    private String[] getUserInput(int index){
-        //1 startHrs
-        // 2 startMins
-        // 3 startMonth
-        // 4 int startYear
-        // 5 int endHrs
-        // 6 endMins
-        // 7 endMonth
-        // 8 endYear
-        // 9 activity Name
-        // 10 color
+    private void getUserInput(){
+        
 
-        String[] arr;
-
-        switch(index){
-            case 0:
-                arr = new String[] {"3","0","0","0","1","0","0","0","1", "Sleep",Integer.toString(R.color.event_color_01)};
-                return(arr);
-            case 1:
-                arr = new String[] {"3","30","0","0","4","30","0","0", "2", "Exercise",Integer.toString(R.color.event_color_02)};
-                return(arr);
-            case 2:
-                arr = new String[] {"4","20","0","0","5","0","0","0", "3", "Socialize",Integer.toString(R.color.event_color_03)};
-                return(arr);
-            case 3:
-                arr = new String[] {"5","0","0","0","3","0","0","0", "3", "Socialize",Integer.toString(R.color.event_color_03)};
-                return(arr);
-            default:
-                System.out.println("SHOULD NOT OCCUR: getUserInput()");
-                return null;
-
+        Event event1 = new Event(1, "Sleep", R.color.event_color_01,
+                2015, 3, 25, 10, 30,
+                2015, 3, 25, 13, 00);
+        event1.getwEvent().setColor(getResources().getColor(event1.getEventColor()));
+        if(activityMap.containsKey(event1.getStartMonth())){
+            activityMap.get(event1.getStartMonth()).add(event1.getwEvent());
+        }else{
+            List<WeekViewEvent> events = new ArrayList<WeekViewEvent>();
+            events.add(event1.getwEvent());
+            activityMap.put(event1.getStartMonth(),events);
         }
+        eventsArrList.add(event1);
+
+        Event event2 = new Event(2,"Exercise", R.color.event_color_02,
+                2015, 3, 22, 20, 00,
+                2015, 3, 22, 22, 00);
+        event2.getwEvent().setColor(getResources().getColor(event2.getEventColor()));
+        if(activityMap.containsKey(event2.getStartMonth())){
+            activityMap.get(event2.getStartMonth()).add(event2.getwEvent());
+        }else{
+            List<WeekViewEvent> events = new ArrayList<WeekViewEvent>();
+            events.add(event2.getwEvent());
+            activityMap.put(event2.getStartMonth(),events);
+        }
+        eventsArrList.add(event2);
+        
+        
+        Event event3 = new Event(3,"Socialize", R.color.event_color_03,
+                2015, 4, 1, 18, 20,
+                2015, 4, 2, 1, 30);
+        event3.getwEvent().setColor(getResources().getColor(event3.getEventColor()));
+        if(activityMap.containsKey(event3.getStartMonth())){
+            activityMap.get(event3.getStartMonth()).add(event3.getwEvent());
+        }else{
+            List<WeekViewEvent> events = new ArrayList<WeekViewEvent>();
+            events.add(event3.getwEvent());
+            activityMap.put(event3.getStartMonth(),events);
+        }
+        eventsArrList.add(event3);
+        
+        Event event4 = new Event(4,"Socialize", R.color.event_color_03,
+                2015, 3, 23, 15, 30,
+                2015, 3, 23, 17, 30);
+        event4.getwEvent().setColor(getResources().getColor(event4.getEventColor()));
+        if(activityMap.containsKey(event4.getStartMonth())){
+            activityMap.get(event4.getStartMonth()).add(event4.getwEvent());
+        }else{
+            List<WeekViewEvent> events = new ArrayList<WeekViewEvent>();
+            events.add(event4.getwEvent());
+            activityMap.put(event4.getStartMonth(),events);
+        }
+        eventsArrList.add(event4);
     }
 
     @Override
@@ -313,38 +343,22 @@ public class MainActivity extends ActionBarActivity implements WeekView.MonthCha
 
         // Populate the week view with some events.
         List<WeekViewEvent> allEvents = new ArrayList<WeekViewEvent>();
+    System.out.println("onMonthChange(" + newYear + "," + newMonth +") was called ---------------");
 
-        for(int i=0;i<4;i++){
-            String[] userInputArr = getUserInput(i);
-            Calendar startTime = Calendar.getInstance();
-            startTime.set(Calendar.HOUR_OF_DAY, Integer.parseInt(userInputArr[0]));
-            startTime.set(Calendar.MINUTE, Integer.parseInt(userInputArr[1]));
-            startTime.set(Calendar.MONTH, newMonth-1);
-            startTime.set(Calendar.YEAR, newYear);
-            Calendar endTime = (Calendar) startTime.clone();
-            endTime.add(Calendar.HOUR, Integer.parseInt(userInputArr[4]));
-            endTime.set(Calendar.MONTH, newMonth-1);
-            WeekViewEvent event = new WeekViewEvent(Integer.parseInt(userInputArr[8]), userInputArr[9], startTime, endTime);
-            event.setColor(getResources().getColor(Integer.parseInt(userInputArr[10])));
-
-            if(activityMap.containsKey(userInputArr[9])){
-                activityMap.get(userInputArr[9]).add(event);
-            }else{
-                List<WeekViewEvent> events = new ArrayList<WeekViewEvent>();
-                events.add(event);
-                activityMap.put(userInputArr[9],events);
-            }
-
-            allEvents.add(event);
+        // add the events in this month to the weekview calendar
+        if(activityMap.get(newMonth) != null){
+            System.out.println("FOUND: events in month" + newMonth);
+            allEvents.addAll(activityMap.get(newMonth));
         }
+
         return allEvents;
     }
 
     private String getEventTitle(Calendar time) {
-        return String.format("Event of %02d:%02d %s/%d", time.get(Calendar.HOUR_OF_DAY), time.get(Calendar.MINUTE), time.get(Calendar.MONTH)+1, time.get(Calendar.DAY_OF_MONTH));
+        return String.format("ics466.timeit.Event of %02d:%02d %s/%d", time.get(Calendar.HOUR_OF_DAY), time.get(Calendar.MINUTE), time.get(Calendar.MONTH)+1, time.get(Calendar.DAY_OF_MONTH));
     }
 
-    protected static HashMap<String,List<WeekViewEvent>> getActivitiesMap(){
+    protected static HashMap<Integer,List<WeekViewEvent>> getActivitiesMap(){
         return activityMap;
     }
 
