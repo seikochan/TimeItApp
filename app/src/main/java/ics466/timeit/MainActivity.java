@@ -1,16 +1,25 @@
 package ics466.timeit;
 
+import android.app.AlertDialog;
+import android.app.Dialog;
 import android.content.Context;
+import android.content.DialogInterface;
+import android.content.Intent;
 import android.graphics.RectF;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
+import android.text.Layout;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.util.TypedValue;
 import android.view.View;
+import android.widget.ArrayAdapter;
+import android.widget.ListAdapter;
+import android.widget.ListView;
 import android.widget.PopupWindow;
+import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.Button;
 import android.view.ViewGroup;
@@ -21,11 +30,15 @@ import com.alamkanak.weekview.WeekViewEvent;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
+import java.util.Iterator;
 import java.util.List;
 import java.util.HashMap;
+import java.util.Map;
 
 public class MainActivity extends ActionBarActivity implements WeekView.MonthChangeListener,
         WeekView.EventClickListener, WeekView.EventLongPressListener{
+
+    private final Context CONTEXT = this;
 
     private static final int TYPE_DAY_VIEW = 1;
     private static final int TYPE_THREE_DAY_VIEW = 2;
@@ -34,14 +47,19 @@ public class MainActivity extends ActionBarActivity implements WeekView.MonthCha
     private WeekView mWeekView;
 
     private Button btnStatsClose;
+    private Button btnStatsOpen;
     private PopupWindow pwStats;
 
+    private List<TimeItActivity> activityArrList;
     private static HashMap<String, List<WeekViewEvent>> activityMap;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
         setContentView(R.layout.activity_main);
+
+    System.out.println("CREATED MAIN!!!!!!!!!");
 
 
         // Get a reference for the week view in the layout.
@@ -59,27 +77,127 @@ public class MainActivity extends ActionBarActivity implements WeekView.MonthCha
 
         activityMap = new HashMap<>();
 
+            setStatsDialogBox();
     }
 
-    private void getPopupWindow(){
-        try{
-            LayoutInflater inflater = (LayoutInflater) MainActivity.this.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-            View layout = inflater.inflate(R.layout.stats_popup_main,(ViewGroup)findViewById(R.id.stats_popup_element));
-            pwStats = new PopupWindow(layout, 300, 380, true);
-            pwStats.showAtLocation(layout, Gravity.CENTER, 0, 0);
+    public void setStatsDialogBox(){
 
-            btnStatsClose = (Button) layout.findViewById(R.id.btn_stats_close);
+        btnStatsOpen = (Button) findViewById(R.id.btnStatsOpen);
 
-            btnStatsClose.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    pwStats.dismiss();
+        // add button listener
+        btnStatsOpen.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                AlertDialog.Builder builder = new AlertDialog.Builder((CONTEXT));
+                activityArrList = new ArrayList<TimeItActivity>();
+
+                // create a close button
+                builder.setNegativeButton(R.string.close,new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        dialog.dismiss();
+                    }
+                });
+
+                // create a list adapter for TimeItActivities
+                //populate Statistics List
+                Iterator iter = MainActivity.getActivitiesMap().entrySet().iterator();
+                while(iter.hasNext()) {
+                    Map.Entry pair = (Map.Entry) iter.next();
+                    List<WeekViewEvent> eventList = (List<WeekViewEvent>) pair.getValue();
+
+                    TimeItActivity act = new TimeItActivity((String) pair.getKey(), (long) 0);
+
+                    for (int i = 0; i < eventList.size(); i++) {
+                        long totTime = eventList.get(i).getEndTime().getTimeInMillis() - eventList.get(i).getStartTime().getTimeInMillis();
+                        act.setTimeTotal(act.getTimeTotal() + totTime);
+                        activityArrList.add(act);
+                    }
                 }
-            });
-        }catch(Exception e){
-            e.printStackTrace();
-        }
+                // populate ListView
+                ListAdapter adapter = new ArrayAdapter<TimeItActivity>(
+                        MainActivity.this, R.layout.stats_item, activityArrList ) {
+
+                    public View getView(int position, View convertView, ViewGroup parent) {
+                        View itemView = convertView;
+
+                        //Ensure we have a view to work with
+                        if(itemView == null) {
+                            itemView = getLayoutInflater().inflate(R.layout.stats_item, parent, false);
+                        }
+
+
+                        //TODO switch on day, week, month, etc
+
+                        //Populate list
+                        //Find activity to work with
+                        TimeItActivity currAct = activityArrList.get(position);
+
+                        //Fill the view
+                        TextView nameView = (TextView) itemView.findViewById(R.id.actName);
+                        nameView.setText(currAct.getActName());
+
+                        TextView statView = (TextView) itemView.findViewById(R.id.intStatVal);
+                        //calculate statistics
+                        //right now based on 24hrs (86400000 ms)
+                        int stat = (int)currAct.getTimeTotal()/86400000;
+                        statView.setText(Integer.toString(stat));
+
+                        itemView.setClickable(false);
+                        //TODO make the listView items unclickable (this no work :( )
+
+                        return (itemView);
+                    }
+                };
+
+                builder.setAdapter(adapter,
+                        new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                // do nothing
+                            }
+                        });
+
+                AlertDialog alertDialog = builder.create();
+
+                alertDialog.setTitle("Statistics:");
+
+                alertDialog.show();
+            }
+
+
+
+        });
     }
+
+
+        //TODO try to get working with a menu item?
+//    private void getPopupWindow(){
+//        try{
+//            context = StatisticsList.getApplicationContext();
+//            //need to somehow pass in appContext from StsisticsList to here....
+//
+//            LayoutInflater inflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+//            View layout = inflater.inflate(R.layout.stats_popup_main,(ViewGroup)findViewById(R.id.stats_popup_element));
+//            pwStats = new PopupWindow(layout, 700, 700, true);
+//            pwStats.showAtLocation(layout, Gravity.CENTER, 0, 0);
+//
+//        System.out.println("POPUP WINDOW CREATED!!!!!!!!!!!");
+//
+//            //System.out.println(activityArrList.toString());
+//
+//            btnStatsClose = (Button) layout.findViewById(R.id.btn_stats_close);
+//
+//            btnStatsClose.setOnClickListener(new View.OnClickListener() {
+//                @Override
+//                public void onClick(View v) {
+//                    pwStats.dismiss();
+//                }
+//            });
+//        }catch(Exception e){
+//            e.printStackTrace();
+//        }
+//    }
 
 
     @Override
@@ -136,10 +254,10 @@ public class MainActivity extends ActionBarActivity implements WeekView.MonthCha
                     mWeekView.setEventTextSize((int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_SP, 10, getResources().getDisplayMetrics()));
                 }
                 return true;
-            case R.id.statistics:
-                System.out.println("Statistics Clicked!");
-                getPopupWindow();
-                return true;
+//            case R.id.statistics:
+//                System.out.println("STATISTICS CLICKED!!!!!!!!!");
+//                getPopupWindow();
+//                return true;
         }
 
         return super.onOptionsItemSelected(item);
@@ -229,4 +347,16 @@ public class MainActivity extends ActionBarActivity implements WeekView.MonthCha
     protected static HashMap<String,List<WeekViewEvent>> getActivitiesMap(){
         return activityMap;
     }
+
+
+
+// / THIS IS TO START A NEW ACTIVITY, NOT THE SAME AS A POPUP WINDOW
+//    /**
+//     * Called when user presses "Statistics" button
+//     * @param view
+//     */
+//    public void openStatsWindow(View view) {
+//        Intent intent = new Intent(this, StatisticsList.class);
+//        startActivity(intent);
+//    }
 }

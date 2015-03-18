@@ -19,6 +19,7 @@ public class TimeItActivity {
     public TimeItActivity(String name, long time){
         actName = name;
         timeTotal = time;
+    System.out.println("ACTIVITY CREATED!!!!!!!!!");
     }
 
     public TimeItActivity(String name, long start, long end){
