@@ -84,7 +84,7 @@ public class MainActivity extends ActionBarActivity implements WeekView.MonthCha
         activityMap = new HashMap<>();
         eventsArrList = new ArrayList<>();
 
-            setStatsDialogBox();
+            //setStatsDialogBox();
 
         getUserInput();
     }
@@ -127,6 +127,7 @@ public class MainActivity extends ActionBarActivity implements WeekView.MonthCha
                     activityArrList.add(act);
                     System.out.println("!!!!!!!!!!!!!!!!!!!");
                 }
+
                 // populate ListView
                 ListAdapter adapter = new ArrayAdapter<TimeItActivity>(
                         MainActivity.this, R.layout.stats_item, activityArrList ) {
@@ -410,13 +411,13 @@ public class MainActivity extends ActionBarActivity implements WeekView.MonthCha
 
 
 
-// / THIS IS TO START A NEW ACTIVITY, NOT THE SAME AS A POPUP WINDOW
-//    /**
-//     * Called when user presses "Statistics" button
-//     * @param view
-//     */
-//    public void openStatsWindow(View view) {
-//        Intent intent = new Intent(this, StatisticsList.class);
-//        startActivity(intent);
-//    }
+// THIS IS TO START A NEW ACTIVITY, NOT THE SAME AS A POPUP WINDOW
+    /**
+     * Called when user presses "Statistics" button
+     * @param view
+     */
+    public void openStatsWindow(View view) {
+        Intent intent = new Intent(this, StatisticsList.class);
+        startActivity(intent);
+    }
 }
