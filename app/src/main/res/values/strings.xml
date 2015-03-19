@@ -9,4 +9,10 @@
     <string name="statistics">Statistics</string>
     <string name="close">Close</string>
 
+    <string-array name="timeMeasurement">
+        <item>last 24 hours</item>
+        <item>last 7 days</item>
+        <item>last 30 days</item>
+    </string-array>
+
 </resources>

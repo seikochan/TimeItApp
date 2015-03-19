@@ -208,4 +208,8 @@ public class Event {
         return endTime;
     }
 
+    public long getDuration() {
+        return endTime - startTime;
+    }
+
 }

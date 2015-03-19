@@ -300,8 +300,8 @@ public class MainActivity extends ActionBarActivity implements WeekView.MonthCha
         
 
         Event event1 = new Event(1, "Sleep", R.color.event_color_01,
-                2015, 3, 25, 10, 30,
-                2015, 3, 25, 13, 00);
+                2015, 3, 18, 10, 30,
+                2015, 3, 18, 13, 00);
         event1.getwEvent().setColor(getResources().getColor(event1.getEventColor()));
         if(wEventMapByMonth.containsKey(event1.getStartMonth())){
             wEventMapByMonth.get(event1.getStartMonth()).add(event1.getwEvent());
@@ -320,8 +320,8 @@ public class MainActivity extends ActionBarActivity implements WeekView.MonthCha
         }
 
         Event event2 = new Event(2,"Exercise", R.color.event_color_02,
-                2015, 3, 22, 20, 00,
-                2015, 3, 22, 22, 00);
+                2015, 3, 15, 20, 00,
+                2015, 3, 15, 22, 00);
         event2.getwEvent().setColor(getResources().getColor(event2.getEventColor()));
         if(wEventMapByMonth.containsKey(event2.getStartMonth())){
             wEventMapByMonth.get(event2.getStartMonth()).add(event2.getwEvent());
@@ -341,8 +341,8 @@ public class MainActivity extends ActionBarActivity implements WeekView.MonthCha
         
         
         Event event3 = new Event(3,"Socialize", R.color.event_color_03,
-                2015, 4, 1, 18, 20,
-                2015, 4, 2, 1, 30);
+                2015, 2, 22, 18, 20,
+                2015, 2, 23, 1, 30);
         event3.getwEvent().setColor(getResources().getColor(event3.getEventColor()));
         if(wEventMapByMonth.containsKey(event3.getStartMonth())){
             wEventMapByMonth.get(event3.getStartMonth()).add(event3.getwEvent());
