@@ -21,11 +21,9 @@
         android:textAppearance="?android:attr/textAppearanceLarge"
         android:text="Large Text"
         android:id="@+id/intStatVal"
-        android:layout_alignTop="@+id/actName"
-        android:layout_toRightOf="@+id/actName"
-        android:layout_toEndOf="@+id/actName"
         android:layout_marginLeft="127dp"
-        android:layout_marginStart="127dp" />
+        android:layout_alignTop="@+id/actName"
+        android:layout_alignParentEnd="true" />
 
     <TextView
         android:layout_width="wrap_content"

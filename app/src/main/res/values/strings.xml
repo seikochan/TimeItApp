@@ -8,11 +8,19 @@
     <string name="action_week_view">Week view</string>
     <string name="statistics">Statistics</string>
     <string name="close">Close</string>
+    <string name="add_act">Add Activity</string>
 
     <string-array name="timeMeasurement">
         <item>last 24 hours</item>
         <item>last 7 days</item>
         <item>last 30 days</item>
+    </string-array>
+
+    <string-array name="colorArr">
+        <item>blue</item>
+        <item>green</item>
+        <item>red</item>
+        <item>purple</item>
     </string-array>
 
 </resources>

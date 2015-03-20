@@ -49,14 +49,15 @@ public class MainActivity extends ActionBarActivity implements WeekView.MonthCha
     private int mWeekViewType = TYPE_THREE_DAY_VIEW;
     private WeekView mWeekView;
 
-    private Button btnStatsClose;
-    private Button btnStatsOpen;
-    private PopupWindow pwStats;
+    // TODO this is not the way to do this, fix to a ActivityRequest later
+    public static String[] results = null;
 
+    private Button btnStatsOpen;
 
     private List<Event> eventsArrList;
     private static HashMap<Integer, List<WeekViewEvent>> wEventMapByMonth;
     private static HashMap<String, List<Event>> activityMap;
+    private static int eventIndex = 0;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -86,7 +87,7 @@ public class MainActivity extends ActionBarActivity implements WeekView.MonthCha
 
             //setStatsDialogBox();
 
-        getUserInput();
+        //getUserInput();
     }
 
     public void setStatsDialogBox(){
@@ -276,10 +277,18 @@ public class MainActivity extends ActionBarActivity implements WeekView.MonthCha
                     mWeekView.setEventTextSize((int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_SP, 10, getResources().getDisplayMetrics()));
                 }
                 return true;
-//            case R.id.statistics:
-//                System.out.println("STATISTICS CLICKED!!!!!!!!!");
-//                getPopupWindow();
-//                return true;
+
+            case R.id.add_act:
+//                final Dialog dialog = new Dialog(MainActivity.this);
+//                dialog.setTitle("Add Activity");
+//                dialog.setContentView(R.layout.date_time_picker);
+//                dialog.show();
+                openAddWindow();
+
+
+
+
+                return true;
         }
 
         return super.onOptionsItemSelected(item);
@@ -287,7 +296,7 @@ public class MainActivity extends ActionBarActivity implements WeekView.MonthCha
 
     @Override
     public void onEventClick(WeekViewEvent event, RectF eventRect) {
-        Toast.makeText(MainActivity.this, "Clicked " + event.getName(), Toast.LENGTH_SHORT).show();
+        Toast.makeText(MainActivity.this, "Activity: " + event.getName() + "\nStartDate: " + event.getStartTime() + "\nEndDate: " + event.getEndTime(), Toast.LENGTH_SHORT).show();
     }
 
     @Override
@@ -296,89 +305,123 @@ public class MainActivity extends ActionBarActivity implements WeekView.MonthCha
     }
 
     //TODO remove once made a userinput interface
-    private void getUserInput(){
-        
+    public  void getUserInput(String name, int color,
+                             int sYear, int sMonth, int sDay, int sHour, int sMin,
+                             int eYear, int eMonth, int eDay, int eHour, int eMin){
 
-        Event event1 = new Event(1, "Sleep", R.color.event_color_01,
-                2015, 3, 18, 10, 30,
-                2015, 3, 18, 13, 00);
-        event1.getwEvent().setColor(getResources().getColor(event1.getEventColor()));
-        if(wEventMapByMonth.containsKey(event1.getStartMonth())){
-            wEventMapByMonth.get(event1.getStartMonth()).add(event1.getwEvent());
+        // create new event
+        Event event = new Event(eventIndex++, name, color,
+                            sYear, sMonth, sDay, sHour, sMin,
+                            eYear, eMonth, eDay, eHour, eMin);
+
+        //set the color
+        event.getwEvent().setColor(getResources().getColor(event.getEventColor()));
+
+        // add to wEvent to wEventMap
+        if(wEventMapByMonth.containsKey(event.getStartMonth())){
+            wEventMapByMonth.get(event.getStartMonth()).add(event.getwEvent());
         }else{
             List<WeekViewEvent> events = new ArrayList<WeekViewEvent>();
-            events.add(event1.getwEvent());
-            wEventMapByMonth.put(event1.getStartMonth(),events);
-        }
-        eventsArrList.add(event1);
-        if(activityMap.containsKey(event1.getEventName())){
-            activityMap.get(event1.getEventName()).add(event1);
-        }else{
-            List<Event> events = new ArrayList<Event>();
-            events.add(event1);
-            activityMap.put(event1.getEventName(),events);
+            events.add(event.getwEvent());
+            wEventMapByMonth.put(event.getStartMonth(),events);
         }
 
-        Event event2 = new Event(2,"Exercise", R.color.event_color_02,
-                2015, 3, 15, 20, 00,
-                2015, 3, 15, 22, 00);
-        event2.getwEvent().setColor(getResources().getColor(event2.getEventColor()));
-        if(wEventMapByMonth.containsKey(event2.getStartMonth())){
-            wEventMapByMonth.get(event2.getStartMonth()).add(event2.getwEvent());
+        // add event to activityMap
+        eventsArrList.add(event);
+        if(activityMap.containsKey(event.getEventName())){
+            System.out.println("OLD ACTIVITYYYYYYYYYYY");
+            activityMap.get(event.getEventName()).add(event);
         }else{
-            List<WeekViewEvent> events = new ArrayList<WeekViewEvent>();
-            events.add(event2.getwEvent());
-            wEventMapByMonth.put(event2.getStartMonth(),events);
-        }
-        eventsArrList.add(event2);
-        if(activityMap.containsKey(event2.getEventName())){
-            activityMap.get(event2.getEventName()).add(event2);
-        }else{
+            System.out.println("NEW ACTIVITYYYYYYYYY");
             List<Event> events = new ArrayList<Event>();
-            events.add(event2);
-            activityMap.put(event2.getEventName(),events);
+            events.add(event);
+            activityMap.put(event.getEventName(),events);
         }
-        
-        
-        Event event3 = new Event(3,"Socialize", R.color.event_color_03,
-                2015, 2, 22, 18, 20,
-                2015, 2, 23, 1, 30);
-        event3.getwEvent().setColor(getResources().getColor(event3.getEventColor()));
-        if(wEventMapByMonth.containsKey(event3.getStartMonth())){
-            wEventMapByMonth.get(event3.getStartMonth()).add(event3.getwEvent());
-        }else{
-            List<WeekViewEvent> events = new ArrayList<WeekViewEvent>();
-            events.add(event3.getwEvent());
-            wEventMapByMonth.put(event3.getStartMonth(),events);
-        }
-        eventsArrList.add(event3);
-        if(activityMap.containsKey(event3.getEventName())){
-            activityMap.get(event3.getEventName()).add(event3);
-        }else{
-            List<Event> events = new ArrayList<Event>();
-            events.add(event3);
-            activityMap.put(event3.getEventName(),events);
-        }
-        
-        Event event4 = new Event(4,"Socialize", R.color.event_color_03,
-                2015, 3, 23, 15, 30,
-                2015, 3, 23, 17, 30);
-        event4.getwEvent().setColor(getResources().getColor(event4.getEventColor()));
-        if(wEventMapByMonth.containsKey(event4.getStartMonth())){
-            wEventMapByMonth.get(event4.getStartMonth()).add(event4.getwEvent());
-        }else{
-            List<WeekViewEvent> events = new ArrayList<WeekViewEvent>();
-            events.add(event4.getwEvent());
-            wEventMapByMonth.put(event4.getStartMonth(),events);
-        }
-        eventsArrList.add(event4);
-        if(activityMap.containsKey(event4.getEventName())){
-            activityMap.get(event4.getEventName()).add(event4);
-        }else{
-            List<Event> events = new ArrayList<Event>();
-            events.add(event4);
-            activityMap.put(event4.getEventName(),events);
-        }
+
+//        HARDCODED EVENTS FOR TESTING
+
+//        Event event1 = new Event(1, "Sleep", R.color.event_color_01,
+//                2015, 3, 18, 10, 30,
+//                2015, 3, 18, 13, 00);
+//        event1.getwEvent().setColor(getResources().getColor(event1.getEventColor()));
+//        if(wEventMapByMonth.containsKey(event1.getStartMonth())){
+//            wEventMapByMonth.get(event1.getStartMonth()).add(event1.getwEvent());
+//        }else{
+//            List<WeekViewEvent> events = new ArrayList<WeekViewEvent>();
+//            events.add(event1.getwEvent());
+//            wEventMapByMonth.put(event1.getStartMonth(),events);
+//        }
+//        eventsArrList.add(event1);
+//        if(activityMap.containsKey(event1.getEventName())){
+//            activityMap.get(event1.getEventName()).add(event1);
+//        }else{
+//            List<Event> events = new ArrayList<Event>();
+//            events.add(event1);
+//            activityMap.put(event1.getEventName(),events);
+//        }
+//
+//        Event event2 = new Event(2,"Exercise", R.color.event_color_02,
+//                2015, 3, 15, 20, 00,
+//                2015, 3, 15, 22, 00);
+//        event2.getwEvent().setColor(getResources().getColor(event2.getEventColor()));
+//        if(wEventMapByMonth.containsKey(event2.getStartMonth())){
+//            wEventMapByMonth.get(event2.getStartMonth()).add(event2.getwEvent());
+//        }else{
+//            List<WeekViewEvent> events = new ArrayList<WeekViewEvent>();
+//            events.add(event2.getwEvent());
+//            wEventMapByMonth.put(event2.getStartMonth(),events);
+//        }
+//        eventsArrList.add(event2);
+//        if(activityMap.containsKey(event2.getEventName())){
+//            activityMap.get(event2.getEventName()).add(event2);
+//        }else{
+//            List<Event> events = new ArrayList<Event>();
+//            events.add(event2);
+//            activityMap.put(event2.getEventName(),events);
+//        }
+//
+//
+//        Event event3 = new Event(3,"Socialize", R.color.event_color_03,
+//                2015, 2, 22, 18, 20,
+//                2015, 2, 23, 1, 30);
+//        event3.getwEvent().setColor(getResources().getColor(event3.getEventColor()));
+//        if(wEventMapByMonth.containsKey(event3.getStartMonth())){
+//            wEventMapByMonth.get(event3.getStartMonth()).add(event3.getwEvent());
+//        }else{
+//            List<WeekViewEvent> events = new ArrayList<WeekViewEvent>();
+//            events.add(event3.getwEvent());
+//            wEventMapByMonth.put(event3.getStartMonth(),events);
+//        }
+//        eventsArrList.add(event3);
+//        if(activityMap.containsKey(event3.getEventName())){
+//            activityMap.get(event3.getEventName()).add(event3);
+//        }else{
+//            List<Event> events = new ArrayList<Event>();
+//            events.add(event3);
+//            activityMap.put(event3.getEventName(),events);
+//        }
+//
+//        Event event4 = new Event(4,"Socialize", R.color.event_color_03,
+//                2015, 3, 23, 15, 30,
+//                2015, 3, 23, 17, 30);
+//        event4.getwEvent().setColor(getResources().getColor(event4.getEventColor()));
+//        if(wEventMapByMonth.containsKey(event4.getStartMonth())){
+//            wEventMapByMonth.get(event4.getStartMonth()).add(event4.getwEvent());
+//        }else{
+//            List<WeekViewEvent> events = new ArrayList<WeekViewEvent>();
+//            events.add(event4.getwEvent());
+//            wEventMapByMonth.put(event4.getStartMonth(),events);
+//        }
+//        eventsArrList.add(event4);
+//        if(activityMap.containsKey(event4.getEventName())){
+//            activityMap.get(event4.getEventName()).add(event4);
+//        }else{
+//            List<Event> events = new ArrayList<Event>();
+//            events.add(event4);
+//            activityMap.put(event4.getEventName(),events);
+//        }
+
+
     }
 
     @Override
@@ -419,5 +462,42 @@ public class MainActivity extends ActionBarActivity implements WeekView.MonthCha
     public void openStatsWindow(View view) {
         Intent intent = new Intent(this, StatisticsList.class);
         startActivity(intent);
+    }
+
+    public void openAddWindow() {
+        Intent intent = new Intent(this, AddEvent.class);
+        
+        //TODO remove when fixed
+        results = null;
+        startActivityForResult(intent,1);
+        System.out.println("DONE WAITING FOR THAT ACTIVITY");
+
+
+        // TODO add when fixed
+        //startActivityForResult(intent,1);
+
+    }
+
+    // TODO change to a result activity
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+//        System.out.println("ON ACTIVITY RESULT~~~~~~~~~~~~~~~~~~~");
+//        super.onActivityResult(requestCode, resultCode, data);
+//        if(resultCode == RESULT_OK){
+//            String[] strArr = data.getStringArrayExtra("data");
+//            getUserInput(strArr[0],Integer.parseInt(strArr[1]),
+//                    Integer.parseInt(strArr[2]),Integer.parseInt(strArr[3]),Integer.parseInt(strArr[4]),Integer.parseInt(strArr[5]),Integer.parseInt(strArr[6]),
+//                    Integer.parseInt(strArr[7]),Integer.parseInt(strArr[8]),Integer.parseInt(strArr[9]),Integer.parseInt(strArr[10]),Integer.parseInt(strArr[11]));
+//        }
+
+    if(results != null){
+        System.out.println("GOT RESULTS: " + results[0]);
+        getUserInput(results[0],Integer.parseInt(results[1]),
+                Integer.parseInt(results[2]),Integer.parseInt(results[3])+1,Integer.parseInt(results[4]),Integer.parseInt(results[5]),Integer.parseInt(results[6]),
+                Integer.parseInt(results[7]),Integer.parseInt(results[8])+1,Integer.parseInt(results[9]),Integer.parseInt(results[10]),Integer.parseInt(results[11]));
+
+        //TODO refresh the week view!  v this works but....is stupid
+        mWeekView.goToToday();
+    }
     }
 }
