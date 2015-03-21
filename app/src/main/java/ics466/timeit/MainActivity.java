@@ -296,7 +296,7 @@ public class MainActivity extends ActionBarActivity implements WeekView.MonthCha
 
     @Override
     public void onEventClick(WeekViewEvent event, RectF eventRect) {
-        Toast.makeText(MainActivity.this, "Activity: " + event.getName() + "\nStartDate: " + event.getStartTime() + "\nEndDate: " + event.getEndTime(), Toast.LENGTH_SHORT).show();
+        Toast.makeText(MainActivity.this, "Click event: " + event.getName(), Toast.LENGTH_SHORT).show();
     }
 
     @Override

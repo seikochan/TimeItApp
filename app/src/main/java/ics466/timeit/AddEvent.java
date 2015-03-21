@@ -1,9 +1,11 @@
 package ics466.timeit;
 
 import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
@@ -35,6 +37,9 @@ public class AddEvent extends Activity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.date_time_picker);
+
+        InputMethodManager mgr = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+
 
         actName = (EditText) findViewById(R.id.edit_act_name);
         colorSpinner = (Spinner) findViewById(R.id.color_spinner);
@@ -97,18 +102,18 @@ public class AddEvent extends Activity {
                     color = R.color.event_color_01;
                 }
 
-                // case
+                // case green
                 if(txtView.getText().equals(strArr[1])){
                     color = R.color.event_color_02;
                 }
 
-                // case
+                // case red
                 if(txtView.getText().equals(strArr[2])){
                     color = R.color.event_color_03;
                 }
 
-                // case
-                if(txtView.getText().equals(strArr[2])){
+                // case purple
+                if(txtView.getText().equals(strArr[3])){
                     color = R.color.event_color_04;
                 }
             }

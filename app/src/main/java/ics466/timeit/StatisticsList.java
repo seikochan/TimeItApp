@@ -32,6 +32,7 @@ public class StatisticsList extends ListActivity{
     Button btnStatsClose;
     Spinner timeSpinner;
     TimeMeas timeMeasurement;
+    TextView txtTotTime;
 
     enum TimeMeas  {
         LAST_DAY,
@@ -59,6 +60,10 @@ public class StatisticsList extends ListActivity{
         ArrayAdapter adapter = ArrayAdapter.createFromResource(this,R.array.timeMeasurement,R.layout.spinner_item);
         timeSpinner.setAdapter(adapter);
         setUpSpinnerEvents();
+
+        txtTotTime = (TextView) findViewById(R.id.txt_tot_time);
+        txtTotTime.setText(prettyTimeString(0));
+
 
 
         timeMeasurement = TimeMeas.LAST_DAY;
@@ -178,19 +183,7 @@ public class StatisticsList extends ListActivity{
                 return (convertView);
             }
 
-            // helper method to return a time in the form "D day, H hour, M min, S sec"
-            private String prettyTimeString(long ms){
-                String prettyTime = String.format("%d day, %d hr, %d min, %d sec",
-                        TimeUnit.MILLISECONDS.toDays(ms),
-                        TimeUnit.MILLISECONDS.toHours(ms) -
-                                TimeUnit.DAYS.toHours(TimeUnit.MILLISECONDS.toDays(ms)),
-                        TimeUnit.MILLISECONDS.toMinutes(ms) -
-                                TimeUnit.HOURS.toMinutes(TimeUnit.MILLISECONDS.toHours(ms)),
-                        TimeUnit.MILLISECONDS.toSeconds(ms) -
-                                TimeUnit.MINUTES.toSeconds(TimeUnit.MILLISECONDS.toMinutes(ms))
-                );
-                return (prettyTime);
-            }
+
 
         };
 
@@ -285,6 +278,20 @@ public class StatisticsList extends ListActivity{
         }
 
         return (totTimeForSpan);
+    }
+
+    // helper method to return a time in the form "D day, H hour, M min, S sec"
+    private static String prettyTimeString(long ms){
+        String prettyTime = String.format("%d day, %d hr, %d min, %d sec",
+                TimeUnit.MILLISECONDS.toDays(ms),
+                TimeUnit.MILLISECONDS.toHours(ms) -
+                        TimeUnit.DAYS.toHours(TimeUnit.MILLISECONDS.toDays(ms)),
+                TimeUnit.MILLISECONDS.toMinutes(ms) -
+                        TimeUnit.HOURS.toMinutes(TimeUnit.MILLISECONDS.toHours(ms)),
+                TimeUnit.MILLISECONDS.toSeconds(ms) -
+                        TimeUnit.MINUTES.toSeconds(TimeUnit.MILLISECONDS.toMinutes(ms))
+        );
+        return (prettyTime);
     }
 
     //helper class and cache mechanism that stores Views

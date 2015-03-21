@@ -30,6 +30,8 @@
                 android:layout_height="wrap_content"
                 android:id="@+id/edit_act_name"
                 android:layout_below="@+id/str_act_name"
+                android:imeOptions="actionDone"
+                android:singleLine="true"
                 android:hint="Type Activity Name Here" />
 
             <TextView

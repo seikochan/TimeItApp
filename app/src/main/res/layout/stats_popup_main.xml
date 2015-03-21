@@ -16,14 +16,23 @@
         android:layout_weight="2.79"
         android:layout_centerHorizontal="true"
         android:layout_alignParentTop="true"
-        android:layout_above="@+id/android:list" />
+        android:layout_above="@+id/txt_tot_time" />
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="New Text"
+        android:id="@+id/txt_tot_time"
+        android:layout_above="@+id/android:list"
+        android:layout_centerHorizontal="true"
+        android:gravity="center_horizontal" />
 
     <ListView
         android:id="@+id/android:list"
         android:layout_width="match_parent"
-        android:layout_height="392dp"
+        android:layout_height="350dp"
         android:clickable="false"
-        android:layout_alignBottom="@+id/btn_stats_close"
+        android:layout_above="@+id/btn_stats_close"
         android:layout_alignParentLeft="true"
         android:layout_alignParentStart="true" />
 
@@ -37,12 +46,4 @@
         android:layout_alignParentRight="true"
         android:layout_alignParentEnd="true" />
 
-    <TextView
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="New Text"
-        android:id="@+id/txt_tot_time"
-        android:layout_alignTop="@+id/android:list"
-        android:layout_centerHorizontal="true"
-        android:gravity="center_horizontal" />
 </RelativeLayout>
